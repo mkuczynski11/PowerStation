@@ -19,6 +19,16 @@ services:
       - mongo
     ports:
     - "8080:80"
+      
+  generator:
+    build:
+      context: ./Generator
+      dockerfile: ./Dockerfile
+    restart: always
+    depends_on:
+      - rabbitmq
+    ports:
+      - "8083:80"
 
   # frontend:
   #   build:
