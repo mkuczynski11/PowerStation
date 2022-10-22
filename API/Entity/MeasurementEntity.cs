@@ -11,6 +11,8 @@ namespace API.Entity
         
         [BsonElement]
         public int SensorID { get; set; }
+        [BsonElement]
+        public string SensorType { get; set; }
         
         [BsonElement]
         public long Timestamp { get; set; }
@@ -22,7 +24,7 @@ namespace API.Entity
         {
         }
 
-        public MeasurementEntity(ObjectId id, int sensorId, long timestamp, double value)
+        public MeasurementEntity(ObjectId id, int sensorId, string sensorType, long timestamp, double value)
         {
             _id = id;
             SensorID = sensorId;

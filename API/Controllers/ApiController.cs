@@ -36,7 +36,8 @@ namespace API.Controllers
         {
             var entity = new MeasurementEntity
             {
-                SensorID = 1,
+                SensorID = -1,
+                SensorType = "dummy",
                 Timestamp = 1,
                 Value = 1.2
             };
