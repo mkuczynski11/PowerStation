@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using API.Configuration;
 using API.Dto;
+using API.Entity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 
 namespace API.Controllers
 {
@@ -12,22 +16,38 @@ namespace API.Controllers
     public class ApiController : Controller
     {
         private readonly ILogger<ApiController> _logger;
+        private readonly MongoClient _mongoClient;
+        private readonly MongoDbConfiguration _mongoConf;
 
-        public ApiController(ILogger<ApiController> logger)
+        public ApiController(ILogger<ApiController> logger, MongoClient mongoClient, IConfiguration configuration)
         {
             _logger = logger;
+            _mongoClient = mongoClient;
+            _mongoConf = configuration.GetSection("MongoDb").Get<MongoDbConfiguration>();
         }
 
-        [HttpGet]
-        public MeasurementDto Get()
+        /// <summary>
+        /// For testing purposes
+        /// </summary>
+        /// <returns>Some response</returns>
+        /// <response code="418">Who knows</response>
+        [HttpGet("test")]
+        public IActionResult Get()
         {
-            MeasurementDto mdto = new MeasurementDto
+            var entity = new MeasurementEntity
             {
                 SensorID = 1,
                 Timestamp = 1,
                 Value = 1.2
             };
-            return mdto;
+            
+            var collection = _mongoClient.GetDatabase(_mongoConf.DatabaseName)
+                .GetCollection<MeasurementEntity>(_mongoConf.CollectionName);
+            
+            collection.InsertOne(entity);
+            // var dto = MeasurementDto.EntityToDtoMapper(entity);
+
+            return StatusCode(418, collection.Find(_ => true).ToList());
         }
 
         /// <summary>

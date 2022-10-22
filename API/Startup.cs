@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using API.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 namespace API
 {
@@ -26,8 +22,15 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var mongoDbConfiguration = Configuration.GetSection("MongoDb").Get<MongoDbConfiguration>();
+            
+            var mongoSettings = MongoClientSettings.FromConnectionString(mongoDbConfiguration.Connection);
+            mongoSettings.ConnectTimeout = TimeSpan.FromSeconds(3);
+            mongoSettings.ServerSelectionTimeout = TimeSpan.FromSeconds(3);
+            
             services.AddControllers();
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" }); });
+            services.AddSingleton(new MongoClient(mongoSettings));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
