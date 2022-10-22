@@ -11,8 +11,8 @@ services:
 
   api:
     build:
-     context: ./API
-     dockerfile: ./Dockerfile
+     context: ./
+     dockerfile: ./Dockerfile.API
     restart: unless-stopped
     depends_on:
       - rabbitmq
@@ -22,8 +22,8 @@ services:
       
   generator:
     build:
-      context: ./Generator
-      dockerfile: ./Dockerfile
+      context: ./
+      dockerfile: ./Dockerfile.Generator
     restart: always
     depends_on:
       - rabbitmq

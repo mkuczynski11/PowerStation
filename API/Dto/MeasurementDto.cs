@@ -11,6 +11,11 @@ namespace API.Dto
         /// <example>1</example>
         public int SensorID { get; set; }
         /// <summary>
+        /// Sensor Type
+        /// </summary>
+        /// <example>coreTemperature</example>
+        public string SensorType { get; set; }
+        /// <summary>
         /// Measurement Timestamp
         /// </summary>
         /// <example>1256953732</example>
@@ -24,6 +29,7 @@ namespace API.Dto
         public static Func<MeasurementEntity, MeasurementDto> EntityToDtoMapper = (entity) => new MeasurementDto()
         {
             SensorID = entity.SensorID,
+            SensorType = entity.SensorType,
             Timestamp = entity.Timestamp,
             Value = entity.Value
         };

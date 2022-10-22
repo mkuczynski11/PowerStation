@@ -1,5 +1,7 @@
 using System;
 using API.Configuration;
+using API.Consumers;
+using Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using MassTransit;
 
 namespace API
 {
@@ -23,7 +26,41 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
             var mongoDbConfiguration = Configuration.GetSection("MongoDb").Get<MongoDbConfiguration>();
-            
+            var rabbitConfiguration = Configuration.GetSection("RabbitMQ").Get<RabbitMQConfiguration>();
+
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<CoreTemperatureConsumer>();
+                x.AddConsumer<PowerGeneratedConsumer>();
+                x.AddConsumer<WaterUsageConsumer>();
+                x.AddConsumer<TurbineRpmConsumer>();
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(new Uri(rabbitConfiguration.ServerAddress), settings =>
+                    {
+                        settings.Username(rabbitConfiguration.Username);
+                        settings.Password(rabbitConfiguration.Password);
+                    });
+                    
+                    cfg.ReceiveEndpoint(QueueNames.CORE_TEMPERATURE, ep =>
+                    {
+                        ep.ConfigureConsumer<CoreTemperatureConsumer>(context);
+                    });
+                    cfg.ReceiveEndpoint(QueueNames.POWER_GENERATED, ep =>
+                    {
+                        ep.ConfigureConsumer<PowerGeneratedConsumer>(context);
+                    });
+                    cfg.ReceiveEndpoint(QueueNames.WATER_USAGE, ep =>
+                    {
+                        ep.ConfigureConsumer<WaterUsageConsumer>(context);
+                    });
+                    cfg.ReceiveEndpoint(QueueNames.TURBINE_RPM, ep =>
+                    {
+                        ep.ConfigureConsumer<TurbineRpmConsumer>(context);
+                    });
+                });
+            });
+
             var mongoSettings = MongoClientSettings.FromConnectionString(mongoDbConfiguration.Connection);
             mongoSettings.ConnectTimeout = TimeSpan.FromSeconds(3);
             mongoSettings.ServerSelectionTimeout = TimeSpan.FromSeconds(3);
