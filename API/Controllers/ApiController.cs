@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using API.Configuration;
-using API.Dto;
-using API.Entity;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using API.Measurement.Dto;
+using API.Measurement.Entity;
+using API.Measurement.Service;
+using API.Query;
+using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 
 namespace API.Controllers
 {
@@ -16,14 +16,12 @@ namespace API.Controllers
     public class ApiController : Controller
     {
         private readonly ILogger<ApiController> _logger;
-        private readonly MongoClient _mongoClient;
-        private readonly MongoDbConfiguration _mongoConf;
+        private readonly MeasurementService _service;
 
-        public ApiController(ILogger<ApiController> logger, MongoClient mongoClient, IConfiguration configuration)
+        public ApiController(ILogger<ApiController> logger, MeasurementService service)
         {
             _logger = logger;
-            _mongoClient = mongoClient;
-            _mongoConf = configuration.GetSection("MongoDb").Get<MongoDbConfiguration>();
+            _service = service;
         }
 
         /// <summary>
@@ -31,24 +29,20 @@ namespace API.Controllers
         /// </summary>
         /// <returns>Some response</returns>
         /// <response code="418">Who knows</response>
-        [HttpGet("test")]
-        public IActionResult Get()
+        [HttpPost("test")]
+        public IActionResult Post(MeasurementDto dto)
         {
             var entity = new MeasurementEntity
             {
-                SensorID = -1,
-                SensorType = "dummy",
-                Timestamp = 1,
-                Value = 1.2
+                SensorID = dto.SensorID,
+                Timestamp = dto.Timestamp,
+                SensorType = dto.SensorType,
+                Value = dto.Value
             };
-            
-            var collection = _mongoClient.GetDatabase(_mongoConf.DatabaseName)
-                .GetCollection<MeasurementEntity>(_mongoConf.CollectionName);
-            
-            collection.InsertOne(entity);
-            // var dto = MeasurementDto.EntityToDtoMapper(entity);
 
-            return StatusCode(418, collection.Find(_ => true).ToList());
+            _service.Create(entity);
+
+            return StatusCode(418, _service.FindAll());
         }
 
         /// <summary>
@@ -58,18 +52,22 @@ namespace API.Controllers
         /// <response code="200">Request Successful</response>
         [HttpGet]
         public IEnumerable<MeasurementDto> Get(
-            [FromQuery]string sensorID,
-            [FromQuery]string sensorType,
-            [FromQuery]string timestampFrom,
-            [FromQuery]string timestampTo,
-            [FromQuery]string sortBy,
-            [FromQuery]string sort)
+            [FromQuery] string sensorID,
+            [FromQuery] string sensorType,
+            [FromQuery] string timestampFrom,
+            [FromQuery] string timestampTo,
+            [FromQuery] string sortBy,
+            [FromQuery] string sort)
         {
-            if (sensorID.Equals(String.Empty))
-            {
-                //No filter
-            }
-            return Enumerable.Empty<MeasurementDto>();
+            return new List<MeasurementEntity>(_service.FindAllWithFilteredAndSorted(
+                new MeasurementFilter()
+                    .WithSensorID(sensorID)
+                    .WithSensorType(sensorType)
+                    .WithTimestampFrom(timestampFrom)
+                    .WithTimestampTo(timestampTo), 
+                new MeasurementSort()
+                    .WithSortBy(sortBy, sort)))
+                .ConvertAll(MeasurementDto.EntityToDtoConverter);
         }
 
         /// <summary>
@@ -79,16 +77,32 @@ namespace API.Controllers
         /// <response code="200">Request Successful</response>
         [HttpGet("csv")]
         public FileResult Download(
-            [FromQuery]string sensorID,
-            [FromQuery]string sensorType,
-            [FromQuery]string timestampFrom,
-            [FromQuery]string timestampTo,
-            [FromQuery]string sortBy,
-            [FromQuery]string sort)
+            [FromQuery] string sensorID,
+            [FromQuery] string sensorType,
+            [FromQuery] string timestampFrom,
+            [FromQuery] string timestampTo,
+            [FromQuery] string sortBy,
+            [FromQuery] string sort)
         {
-            string fileName = "data.csv";
-            byte[] fileBytes = { };
-            return File(fileBytes, "text/csv", fileName);
+            var dtos = new List<MeasurementEntity>(_service.FindAllWithFilteredAndSorted(
+                    new MeasurementFilter()
+                        .WithSensorID(sensorID)
+                        .WithSensorType(sensorType)
+                        .WithTimestampFrom(timestampFrom)
+                        .WithTimestampTo(timestampTo), 
+                    new MeasurementSort()
+                        .WithSortBy(sortBy, sort)))
+                .ConvertAll(MeasurementDto.EntityToDtoConverter);
+            
+            using (var ms = new MemoryStream())
+            using (var writer = new StreamWriter(ms))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(dtos);
+                csv.Flush();
+                ms.Position = 0;
+                return File(ms.ToArray(), "text/csv", "data.csv");
+            }
         }
     }
 }
