@@ -1,23 +1,19 @@
 ﻿using System.Threading.Tasks;
-using API.Configuration;
-using API.Entity;
+using API.Common;
+using API.Measurement.Entity;
+using API.Measurement.Service;
 using Common;
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 
 namespace API.Consumers
 {
     public class CoreTemperatureConsumer : IConsumer<MeasurementMessage>
     {
-        private readonly MongoClient _mongoClient;
-        private readonly MongoDbConfiguration _mongoConf;
+        private readonly MeasurementService _service;
 
-        public CoreTemperatureConsumer(MongoClient mongoClient, IConfiguration configuration)
+        public CoreTemperatureConsumer(MeasurementService service)
         {
-            _mongoClient = mongoClient;
-            _mongoConf = configuration.GetSection("MongoDb").Get<MongoDbConfiguration>();
+            _service = service;
         }
 
         public Task Consume(ConsumeContext<MeasurementMessage> context)
@@ -35,10 +31,7 @@ namespace API.Consumers
                 Value = value
             };
             
-            var collection = _mongoClient.GetDatabase(_mongoConf.DatabaseName)
-                .GetCollection<MeasurementEntity>(_mongoConf.CollectionName);
-            
-            collection.InsertOne(entity);
+            _service.Create(entity);
             return Task.CompletedTask;
         }
     }
