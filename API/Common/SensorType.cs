@@ -1,4 +1,4 @@
-﻿namespace Common
+﻿namespace API.Common
 {
     public static class SensorType
     {

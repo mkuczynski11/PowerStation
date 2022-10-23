@@ -1,7 +1,7 @@
 ﻿using System;
-using API.Entity;
+using API.Measurement.Entity;
 
-namespace API.Dto
+namespace API.Measurement.Dto
 {
     public class MeasurementDto
     {
@@ -25,8 +25,8 @@ namespace API.Dto
         /// </summary>
         /// <example>103.23</example>
         public double Value { get; set; }
-
-        public static Func<MeasurementEntity, MeasurementDto> EntityToDtoMapper = (entity) => new MeasurementDto()
+        
+        public static Converter<MeasurementEntity, MeasurementDto> EntityToDtoConverter  = (entity) => new MeasurementDto()
         {
             SensorID = entity.SensorID,
             SensorType = entity.SensorType,
