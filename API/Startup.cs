@@ -17,6 +17,8 @@ namespace API
 {
     public class Startup
     {
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -73,6 +75,14 @@ namespace API
             services.AddSingleton(new MongoClient(mongoSettings));
             services.AddScoped<MeasurementRepository>();
             services.AddScoped<MeasurementService>();
+
+            services.AddCors(o => o.AddPolicy(MyAllowSpecificOrigins,
+                      builder =>
+                      {
+                          builder.WithOrigins("http://localhost:8000")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                      }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,6 +98,8 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthorization();
 
