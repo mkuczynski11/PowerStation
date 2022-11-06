@@ -1,5 +1,6 @@
 using Generator;
 using Generator.Datastores;
+using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IGeneratorState>(new GeneratorState());
 builder.Services.AddSingleton<ISensorDatastore>(new SensorDatastore());
-builder.Services.AddSingleton<ISensorThreadStore>(new SensorThreadStore());
+builder.Services.AddSingleton<ISensorTaskStore>(new SensorTaskStore());
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
+    
+});
 
 var app = builder.Build();
 
