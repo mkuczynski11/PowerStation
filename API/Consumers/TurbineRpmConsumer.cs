@@ -7,7 +7,7 @@ using MassTransit;
 
 namespace API.Consumers
 {
-    public class TurbineRpmConsumer: IConsumer<MeasurementMessage>
+    public class TurbineRpmConsumer: IConsumer<ITurbineRpmMessage>
     {
         private readonly MeasurementService _service;
 
@@ -16,7 +16,7 @@ namespace API.Consumers
             _service = service;
         }
         
-        public Task Consume(ConsumeContext<MeasurementMessage> context)
+        public Task Consume(ConsumeContext<ITurbineRpmMessage> context)
         {
             var sensorID = context.Message.ID;
             var timestamp = context.Message.Timestamp;

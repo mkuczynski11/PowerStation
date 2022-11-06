@@ -1,10 +1,10 @@
 ﻿namespace Common
 {
-    public class QueueNames
+    public static class QueueNames
     {
-        public static string CORE_TEMPERATURE = "core-temperature";
-        public static string POWER_GENERATED = "power-generated";
-        public static string WATER_USAGE = "water-usage";
-        public static string TURBINE_RPM = "turbine-rpm";
+        public const string CORE_TEMPERATURE = "core-temperature";
+        public const string POWER_GENERATED = "power-generated";
+        public const string WATER_USAGE = "water-usage";
+        public const string TURBINE_RPM = "turbine-rpm";
     }
 }
