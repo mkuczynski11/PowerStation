@@ -17,13 +17,13 @@ public class SensorDatastore : ISensorDatastore
         CoreTempSensors = new List<Sensor>
         {
             new Sensor(1, "CoreTemp", 750.0f, 950.0f, 2.0f, 1.0),
-            // new Sensor(2, "CoreTemp", 750.0f, 950.0f, 2.0f, 1.0),
-            // new Sensor(3, "CoreTemp", 775.0f, 975.0f, 2.0f, 1.1),
-            // new Sensor(4, "CoreTemp", 800.0f, 1000.0f, 3.0f, 1.2),
-            // new Sensor(5, "CoreTemp", 825.0f, 1025.0f, 3.0f, 1.3),
-            // new Sensor(6, "CoreTemp", 850.0f, 1050.0f, 3.0f, 1.4),
-            // new Sensor(7, "CoreTemp", 850.0f, 1050.0f, 3.0f, 1.4),
-            // new Sensor(8, "CoreTemp", 850.0f, 1050.0f, 3.0f, 1.4)
+            new Sensor(2, "CoreTemp", 750.0f, 950.0f, 2.0f, 1.0),
+            new Sensor(3, "CoreTemp", 775.0f, 975.0f, 2.0f, 1.1),
+            new Sensor(4, "CoreTemp", 800.0f, 1000.0f, 3.0f, 1.2),
+            new Sensor(5, "CoreTemp", 825.0f, 1025.0f, 3.0f, 1.3),
+            new Sensor(6, "CoreTemp", 850.0f, 1050.0f, 3.0f, 1.4),
+            new Sensor(7, "CoreTemp", 850.0f, 1050.0f, 3.0f, 1.4),
+            new Sensor(8, "CoreTemp", 850.0f, 1050.0f, 3.0f, 1.4)
         };
         
         PowerGeneratedSensors = new List<Sensor>
