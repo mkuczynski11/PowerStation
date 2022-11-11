@@ -6,52 +6,25 @@ services:
     image: rabbitmq:3-management
     hostname: rabbitmq
     restart: always
-    ports:
-      - "5672:5672"
-      - "15672:15672"
 
   api:
-    build:
-     context: ./
-     dockerfile: ./Dockerfile.API
+    image: SI_180410_api
     restart: unless-stopped
     depends_on:
       - rabbitmq
-      - mongo
     ports:
-    - "8080:80"
+    - "180410:80"
       
   generator:
-    build:
-      context: ./
-      dockerfile: ./Dockerfile.Generator
+    image: SI_180410_generator
     restart: always
     depends_on:
       - rabbitmq
     ports:
-      - "8083:80"
+      - "180405:80"
 
-  # frontend:
-  #   build:
-  #     context: ./
-  #     dockerfile: ./Dockerfile.Frontend
-  #   restart: always
-  #   ports:
-  #     - "8000:8000"
-
-  mongo:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-
-  mongo-express:
-    image: mongo-express
+  frontend:
+    image: SI_180410_frontend
     restart: always
     ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      - "180297:8000"
