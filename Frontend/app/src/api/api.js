@@ -22,51 +22,51 @@ export async function getSensorData(params) {
       return response;
     });
 
-  // return res.data;
-  return [
-    {
-      "sensorID": 0,
-      "sensorType": "core-temperature",
-      "timestamp": 3,
-      "value": 12
-    },
-    {
-      "sensorID": 1,
-      "sensorType": "core-temperature",
-      "timestamp": 12,
-      "value": 123
-    },
-    {
-      "sensorID": 3,
-      "sensorType": "core-temperature",
-      "timestamp": 3,
-      "value": 12
-    },
-    {
-      "sensorID": 4,
-      "sensorType": "core-temperature",
-      "timestamp": 12,
-      "value": 123
-    },
-    {
-      "sensorID": 55,
-      "sensorType": "core-temperature",
-      "timestamp": 3,
-      "value": 12
-    },
-    {
-      "sensorID": 1,
-      "sensorType": "core-temperature",
-      "timestamp": 12,
-      "value": 123
-    },
-    {
-      "sensorID": 3,
-      "sensorType": "power-generated",
-      "timestamp": 14,
-      "value": 1300
-    }
-  ]
+  return res.data;
+  // return [
+  //   {
+  //     "sensorID": 0,
+  //     "sensorType": "core-temperature",
+  //     "timestamp": 3,
+  //     "value": 12
+  //   },
+  //   {
+  //     "sensorID": 1,
+  //     "sensorType": "core-temperature",
+  //     "timestamp": 12,
+  //     "value": 123
+  //   },
+  //   {
+  //     "sensorID": 3,
+  //     "sensorType": "core-temperature",
+  //     "timestamp": 3,
+  //     "value": 12
+  //   },
+  //   {
+  //     "sensorID": 4,
+  //     "sensorType": "core-temperature",
+  //     "timestamp": 12,
+  //     "value": 123
+  //   },
+  //   {
+  //     "sensorID": 55,
+  //     "sensorType": "core-temperature",
+  //     "timestamp": 3,
+  //     "value": 12
+  //   },
+  //   {
+  //     "sensorID": 1,
+  //     "sensorType": "core-temperature",
+  //     "timestamp": 12,
+  //     "value": 123
+  //   },
+  //   {
+  //     "sensorID": 3,
+  //     "sensorType": "power-generated",
+  //     "timestamp": 14,
+  //     "value": 1300
+  //   }
+  // ]
 }
 
 export async function getSensorDataCSV(params) {
