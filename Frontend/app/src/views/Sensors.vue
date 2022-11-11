@@ -117,12 +117,21 @@
           </template>
         </b-table>
         <b-row>
-          <b-button-group>
-            <b-button variant="success" @click="downloadJSON()">
-              JSON
-            </b-button>
-            <b-button variant="warning" @click="downloadCSV()"> CSV </b-button>
-          </b-button-group>
+          <b-col cols="2"></b-col>
+          <b-col cols="3">
+            <b-button-group>
+              <b-button variant="success" @click="downloadJSON()">
+                JSON
+              </b-button>
+              <b-button variant="warning" @click="downloadCSV()">
+                CSV
+              </b-button>
+            </b-button-group>
+          </b-col>
+          <b-col cols="1">
+            <b-button @click="openPlotModal(itemsAfterFiltering)"> Plot </b-button>
+          </b-col>
+          <b-col cols="6"></b-col>
         </b-row>
       </b-col>
       <b-col cols="1"></b-col>
@@ -132,85 +141,17 @@
         <b-spinner style="width: 3rem; height: 3rem" />
       </b-col>
     </b-row>
-    <b-modal id="book-reservation-modal" size="lg" :hide-header="true">
+    <b-modal id="plot-modal" size="lg" :hide-header="true">
       <b-container>
-        <h4>Please specify the qunatity</h4>
-        <hr />
-        <b-row class="pt-2">
-          <b-col cols="3">
-            <b>Price per book</b>
-          </b-col>
-          <b-col cols="3" v-if="bookToReserve">
-            {{ bookToReserve.unitPrice }} zł
-          </b-col>
-          <b-col cols="3">
-            <b>Total price</b>
-          </b-col>
-          <b-col cols="3" v-if="bookToReserve && form.quantity">
-            {{
-              bookToReserve.unitPrice * parseInt(form.quantity) +
-              (chosenShippingMethod != null ? chosenShippingMethod.price : 0)
-            }}
-            zł
-          </b-col>
-        </b-row>
-        <b-row class="pt-2">
-          <b-col cols="3">
-            <b>Available discount</b>
-          </b-col>
-          <b-col cols="3" v-if="bookToReserve">
-            {{ bookToReserve.discount }} %
-          </b-col>
-          <b-col cols="3">
-            <b>Price after discount</b>
-          </b-col>
-          <b-col cols="3" v-if="bookToReserve">
-            {{
-              (
-                bookToReserve.unitPrice *
-                  parseInt(form.quantity) *
-                  (1 - bookToReserve.discount / 100) +
-                (chosenShippingMethod != null ? chosenShippingMethod.price : 0)
-              ).toFixed(2)
-            }}
-            zł
-          </b-col>
-        </b-row>
-
-        <b-row class="pt-2">
-          <b-col cols="3">
-            <b>Quantity</b>
-          </b-col>
-          <b-col cols="6">
-            <b-form-input
-              v-model="form.quantity"
-              :type="'number'"
-              placeholder="1"
-            />
-          </b-col>
-        </b-row>
-        <b-row class="pt-2">
-          <b-col cols="3">
-            <b>Shipping</b>
-          </b-col>
-          <b-col cols="6">
-            <b-form-select
-              v-model="chosenShippingMethod"
-              :options="shippingMethods"
-            />
-          </b-col>
-        </b-row>
+        <LineChart
+          :chart-options="chartOptions"
+          :chart-data="chartData"
+          chart-id="line-chart"
+          dataset-id-key="label"
+        />
       </b-container>
       <template #modal-footer="{}">
-        <b-button variant="danger" @click="closeBookReservationForm()">
-          Cancel
-        </b-button>
-        <b-button
-          variant="success"
-          @click="beginOrder()"
-          :disabled="!validForm()"
-          >Add to the basket!</b-button
-        >
+        <b-button variant="danger" @click="closePlotModal()"> Cancel </b-button>
       </template>
     </b-modal>
   </b-container>
@@ -224,12 +165,34 @@ import {
   getBooksDiscounts,
   getSensorData,
 } from "@/api/api.js";
+import { Line as LineChart } from "vue-chartjs/legacy";
+
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  CategoryScale,
+  PointElement,
+} from "chart.js";
+
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  CategoryScale,
+  PointElement
+);
 
 const SENSOR_TYPES = [
-  { name: "core-temperature", label: "Core temperature", unit: "°C" },
-  { name: "power-generated", label: "Power generated", unit: "MWh" },
-  { name: "water-usage", label: "Water usage", unit: "L" },
-  { name: "turbine-rpm", label: "Turbine RPM", unit: "rpm" },
+  { name: "coreTemperature", label: "Core temperature", unit: "°C" },
+  { name: "powerGenerated", label: "Power generated", unit: "MWh" },
+  { name: "waterUsage", label: "Water usage", unit: "L" },
+  { name: "turbineRpm", label: "Turbine RPM", unit: "rpm" },
 ];
 
 const SENSOR_FIELDS = [
@@ -246,6 +209,9 @@ const FILTERS = [
 
 export default {
   name: "Sensors",
+  components: {
+    LineChart,
+  },
   data: function () {
     return {
       sensors: [],
@@ -253,6 +219,7 @@ export default {
       SENSOR_TYPES: SENSOR_TYPES,
       currentSensorType: SENSOR_TYPES[0],
       itemsToDisplay: [],
+      itemsAfterFiltering: [],
       fields: SENSOR_FIELDS,
       filter: "",
       filters: FILTERS,
@@ -260,12 +227,26 @@ export default {
       totalRows: 1,
       currentPage: 1,
       perPage: 5,
-      pageOptions: [5, 10, 15, 50, 100],
+      pageOptions: [5, 10, 25, 50, 100],
       sensorsLoaded: false,
+      chartData: {
+        labels: [],
+        datasets: [
+          // {
+          //   label: "Np typ sensora",
+          //   backgroundColor: "#ffffff",
+          //   data: []
+          // }
+        ],
+      },
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+      },
       form: {
         quantity: null,
       },
-      bookToReserve: null,
+      dataToPlot: null,
       order: null,
       shippingMethods: null,
       chosenShippingMethod: null,
@@ -280,6 +261,7 @@ export default {
     async loadSensors() {
       let res = await getSensorData();
       this.sensors = res;
+      console.log("Sensor data loaded");
     },
 
     async loadPrices() {
@@ -297,6 +279,8 @@ export default {
       // Trigger pagination to update the number of buttons/pages due to filtering
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
+      this.itemsAfterFiltering = filteredItems;
+      console.log(this.itemsAfterFiltering);
     },
 
     downloadJSON() {
@@ -334,7 +318,7 @@ export default {
     },
 
     timestampToDate(timestamp) {
-      let date = new Date(timestamp * 1000);
+      let date = new Date(timestamp);
       return date.toLocaleString();
     },
 
@@ -350,6 +334,7 @@ export default {
       this.currentSensorType = sensorType;
 
       this.itemsToDisplay = this.items[this.currentSensorType.name];
+      this.itemsAfterFiltering = this.itemsToDisplay;
       this.totalRows = this.itemsToDisplay.length;
     },
 
@@ -376,6 +361,8 @@ export default {
         newSensorReading.time = this.timestampToDate(sensor.timestamp);
         this.items[newSensorReading.sensorType].push(newSensorReading);
       }
+
+      // this.itemsAfterFiltering
 
       this.changeActiveSensorType(this.currentSensorType);
 
@@ -404,16 +391,33 @@ export default {
       }
     },
 
-    openBookReservationForm(book) {
-      this.bookToReserve = book;
-      this.form.quantity = 1;
-      this.chosenShippingMethod = null;
+    openPlotModal(dataToPlot) {
+      this.dataToPlot = dataToPlot;
 
-      this.$bvModal.show("book-reservation-modal");
+      // Prepare plot data
+      this.chartData.labels = [];
+      this.chartData.datasets = [];
+
+      this.chartData.datasets.push({
+        label: "Sensors",
+        data: [],
+      });
+      // Array.slice(start, stop)
+      this.dataToPlot = this.dataToPlot.slice(
+        (this.currentPage - 1) * this.perPage,
+        this.currentPage * this.perPage
+      );
+
+      this.dataToPlot.forEach((sensor) => {
+        this.chartData.labels.push(sensor.time);
+        this.chartData.datasets[0].data.push(sensor.value);
+      });
+
+      this.$bvModal.show("plot-modal");
     },
 
-    closeBookReservationForm() {
-      this.$bvModal.hide("book-reservation-modal");
+    closePlotModal() {
+      this.$bvModal.hide("plot-modal");
     },
 
     validForm() {
@@ -452,7 +456,7 @@ export default {
         });
       }
 
-      this.closeBookReservationForm();
+      // this.closeBookReservationForm();
     },
   },
 };
