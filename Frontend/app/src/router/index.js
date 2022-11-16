@@ -2,9 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '@/views/Home.vue';
 import Sensors from '@/views/Sensors.vue';
-import Orders from '@/views/Orders.vue';
-import Invoices from '@/views/Invoices.vue';
-import ManagementPanel from '@/views/ManagementPanel.vue';
+import Dashboard from '@/views/Dashboard.vue';
 
 Vue.use(VueRouter)
 
@@ -22,7 +20,7 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: Orders
+    component: Dashboard
   },
 ]
 

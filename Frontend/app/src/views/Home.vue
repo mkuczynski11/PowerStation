@@ -5,11 +5,11 @@
         <b-col cols="2"></b-col>
         <b-col cols="8">
           <b-card>
-            <h4>Welcome to our Library!</h4>
+            <h4>Power plant sensors system</h4>
             <hr/>
-            <h5>In the <i>Książki</i> tab You may find list of all the books available for purchase.</h5>
-            <h5><i>Zamówienia</i> tab contains all the orders placed in the previous tab, with some most important info about them.</h5>
-            <h5>In the last tab <i>Faktury</i> You may find invoices for only the confirmed orders, regardless of whether they were paid or not.</h5>
+            <h5>A project for <i>.NET Web Services</i> course prepared by Michał Bałasz, Michał Flakowski, Martin Kuczyński and Piotr Woliński.</h5>
+            <h5><i>Sensors</i> tab contains informations about sensors in various ways. Data can be either plot on charts, viewed in tables or downoladed as CSV/JSON file.</h5>
+            <h5>In the <i>Dashboard</i> tab one may find live informations about the sensors.</h5>
           </b-card>
         </b-col>
         <b-col cols="2"></b-col>
