@@ -12,7 +12,7 @@ public class SensorTask
     private readonly ILogger<SensorTask> _logger;
     private readonly IPublishEndpoint _publishEndpoint;
     private float _currentVal;
-    private bool _valueAddition;
+    private Random _random;
 
     public SensorTask(Sensor sensor, ILogger<SensorTask> logger, IPublishEndpoint publishEndpoint)
     {
@@ -20,8 +20,8 @@ public class SensorTask
         _logger = logger;
         _publishEndpoint = publishEndpoint;
         _currentVal = (sensor.MinValue + sensor.MaxValue) / 2;
-        _valueAddition = true;
         _logger.LogInformation("I am a task with sensor: " + sensor);
+        _random = new Random();
     }
 
     public void SensorSendingTask(CancellationToken token)
@@ -53,17 +53,11 @@ public class SensorTask
 
     private void UpdateCurrentVal()
     {
-        if (_valueAddition)
+        float val = _currentVal;
+        val = _random.Next() % 2 == 0 ? val + _sensor.StepValue : val - _sensor.StepValue;
+        if (val <= _sensor.MaxValue && val >= _sensor.MinValue)
         {
-            _currentVal += _sensor.StepValue;
-            if (_currentVal >= _sensor.MaxValue)
-                _valueAddition = false;
-        }
-        else
-        {
-            _currentVal -= _sensor.StepValue;
-            if (_currentVal <= _sensor.MinValue)
-                _valueAddition = true;
+            _currentVal = val;
         }
     }
 }
