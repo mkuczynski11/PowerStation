@@ -154,7 +154,11 @@
       <b-row>
         <b-col cols="2"></b-col>
         <b-col cols="8" class="justify-content-center">
-          <h4>{{ this.currentSensorType.label}} sensors chart [{{ SENSOR_UNITS[this.currentSensorType.name]}}]</h4>
+          <h4>
+            {{ this.currentSensorType.label }} sensors chart [{{
+              SENSOR_UNITS[this.currentSensorType.name]
+            }}]
+          </h4>
         </b-col>
         <b-col cols="2"></b-col>
       </b-row>
@@ -281,7 +285,11 @@ export default {
     },
 
     downloadJSON() {
-      let content = JSON.stringify(this.itemsToDisplay);
+      let toDownload = this.itemsAfterFiltering.slice(
+        (this.currentPage - 1) * this.perPage,
+        this.currentPage * this.perPage
+      );
+      let content = JSON.stringify(toDownload);
       let blob = new Blob([content], { type: "application/json" });
 
       var url = URL.createObjectURL(blob);
@@ -292,9 +300,13 @@ export default {
     },
 
     downloadCSV() {
+      let toDownload = this.itemsAfterFiltering.slice(
+        (this.currentPage - 1) * this.perPage,
+        this.currentPage * this.perPage
+      );
       const CONTENT = [
         ["sensorID", "sensorType", "timestamp", "time", "value"],
-        ...this.itemsToDisplay.map((item) => [
+        ...toDownload.map((item) => [
           item.sensorID,
           item.sensorType,
           item.timestamp,
@@ -387,7 +399,7 @@ export default {
         });
       });
       this.chartData.labels.sort((a, b) => {
-        return a.timestamp - b.timesatmp;
+        return a.timestamp - b.timestamp;
       });
       let tmpLabels = [];
       for (let label of this.chartData.labels) {
