@@ -111,7 +111,7 @@ export default {
       console.log("Setting up new interval");
 
       this.loadingInterval = setInterval(
-        () => this.loadNewSensorData(this.lastTimestamp),
+        () => this.loadNewSensorData(this.lastTimestamp+1),
         this.currentRefreshDelay * 1000
       );
     },
